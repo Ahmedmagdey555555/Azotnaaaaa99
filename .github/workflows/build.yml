@@ -13,18 +13,29 @@ jobs:
         run: |
           unzip -o *.zip
 
+      - name: Find Flutter Project Directory
+        id: find_dir
+        run: |
+          PROJECT_DIR=$(dirname $(find . -name "pubspec.yaml" -not -path "*/.*" | head -n 1))
+          echo "DIR=$PROJECT_DIR" >> $GITHUB_ENV
+          echo "Found project directory at: $PROJECT_DIR"
+
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
 
       - name: Install Dependencies
-        run: flutter pub get
+        run: |
+          cd ${{ env.DIR }}
+          flutter pub get
 
       - name: Build APK
-        run: flutter build apk --release
+        run: |
+          cd ${{ env.DIR }}
+          flutter build apk --release
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: '**/build/app/outputs/flutter-apk/app-release.apk'
